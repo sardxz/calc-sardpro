@@ -1,0 +1,583 @@
+nova calc 25/06
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora Crypto Pro - Versão Completa</title>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+    <style>
+        /* --- GERAL & TEMA --- */
+        :root {
+            --cor-fundo: #121212;
+            --cor-container: #1E1E1E;
+            --cor-card: #2A2A2A;
+            --cor-texto-principal: #F0F0F0;
+            --cor-texto-secundario: #A0A0A0;
+            --cor-amarelo-principal: #FFC300;
+            --cor-amarelo-hover: #FFD700;
+            --cor-borda: #444;
+            --sombra-card: 0 8px 25px rgba(0,0,0,0.5);
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 25px;
+            background: var(--cor-fundo);
+            color: var(--cor-texto-principal);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1300px;
+            margin: 0 auto;
+            background: var(--cor-container);
+            border-radius: 15px;
+            box-shadow: var(--sombra-card);
+            overflow: hidden;
+            border: 1px solid var(--cor-borda);
+        }
+
+        .header {
+            background: linear-gradient(135deg, #333 0%, #111 100%);
+            color: var(--cor-amarelo-principal);
+            padding: 25px;
+            text-align: center;
+            border-bottom: 2px solid var(--cor-amarelo-principal);
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 2.5em;
+            font-weight: 700;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.7);
+        }
+
+        /* --- API FETCHER --- */
+        .api-fetcher {
+            padding: 20px 30px;
+            background-color: #252525;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .api-fetcher input {
+            flex-grow: 1;
+        }
+        
+        .api-fetcher button {
+            background-color: var(--cor-amarelo-principal);
+            color: #111;
+            font-weight: bold;
+            padding: 12px 20px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .api-fetcher button:hover {
+            background-color: var(--cor-amarelo-hover);
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+            gap: 25px;
+            padding: 30px;
+        }
+
+        /* --- ESTILO DOS CARDS --- */
+        .card {
+            background: var(--cor-card);
+            border-radius: 12px;
+            padding: 25px;
+            border-left: 6px solid;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+        }
+
+        /* Emblemas Coloridos */
+        .card.pnl { border-left-color: #3498db; } /* Azul */
+        .card.liquidation { border-left-color: #e74c3c; } /* Vermelho */
+        .card.risk-reward { border-left-color: #9b59b6; } /* Roxo */
+        .card.avg-price { border-left-color: #1abc9c; } /* Verde Água */
+        .card.risk-mgmt { border-left-color: #f39c12; } /* Laranja */
+        .card.stops-percent { border-left-color: #00bcd4; } /* Ciano */
+        .card.goal { border-left-color: #27ae60; } /* Verde Esmeralda */
+        .card.performance { border-left-color: #4caf50; } /* Verde */
+        .card.percentage { border-left-color: #673ab7; } /* Roxo Escuro */
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .card-header h3 {
+            margin: 0;
+            color: var(--cor-texto-principal);
+            font-size: 1.4em;
+            font-weight: 600;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+        
+        .form-content {
+            flex-grow: 1;
+        }
+        
+        .separator {
+            height: 2px;
+            background: var(--cor-borda);
+            margin: 20px 0;
+            border-radius: 1px;
+        }
+
+        /* --- INPUTS E FORMULÁRIOS --- */
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 6px;
+            color: var(--cor-texto-secundario);
+            font-weight: 500;
+            font-size: 0.9em;
+        }
+
+        .input-group input, .input-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid var(--cor-borda);
+            background-color: var(--cor-container);
+            color: var(--cor-texto-principal);
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s ease;
+            box-sizing: border-box;
+        }
+
+        .input-group input:focus, .input-group select:focus {
+            outline: none;
+            border-color: var(--cor-amarelo-principal);
+        }
+
+        .dual-input {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        
+        .result {
+            background: linear-gradient(135deg, #333, #222);
+            color: var(--cor-texto-principal);
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: auto;
+            font-weight: 600;
+            font-size: 1.1em;
+            text-align: center;
+            min-height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid var(--cor-borda);
+        }
+        
+        .result.error { color: #e74c3c; }
+        .result.success { color: #2ecc71; }
+        .result-pnl.loss { color: #e74c3c; }
+        .result-pnl.profit { color: #2ecc71; }
+        
+
+        /* --- BOTÕES E ELEMENTOS INTERATIVOS --- */
+        .clear-btn {
+            background: #444;
+            color: var(--cor-texto-principal);
+            border: none;
+            padding: 8px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            align-self: flex-end;
+            margin-top: 15px;
+        }
+        .clear-btn:hover { background: #555; }
+        
+        /* --- Tooltips --- */
+        .tooltip { position: relative; cursor: help; color: var(--cor-texto-secundario); }
+        .tooltip .tooltip-text {
+            visibility: hidden; width: 250px; background-color: #111;
+            color: #fff; text-align: left; font-size: 0.85em; font-weight: 400;
+            border-radius: 6px; padding: 10px; position: absolute; z-index: 10;
+            bottom: 125%; left: 50%; margin-left: -125px; opacity: 0;
+            transition: opacity 0.3s; border: 1px solid var(--cor-amarelo-principal);
+        }
+        .tooltip .tooltip-text::after {
+            content: ""; position: absolute; top: 100%; left: 50%; margin-left: -5px;
+            border-width: 5px; border-style: solid; border-color: var(--cor-amarelo-principal) transparent transparent transparent;
+        }
+        .tooltip:hover .tooltip-text { visibility: visible; opacity: 1; }
+        
+        /* --- Elementos Específicos --- */
+        #avgPriceEntries { max-height: 150px; overflow-y: auto; padding-right: 5px; }
+        .avg-price-entry { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; }
+        .avg-price-entry input { font-size: 0.9em; }
+        #addEntryBtn {
+            background-color: var(--cor-amarelo-principal); color: #111; font-weight: bold;
+            padding: 10px; border-radius: 8px; border: none; cursor: pointer;
+            transition: background-color 0.3s ease; width: 100%; margin-top: 10px;
+        }
+        #addEntryBtn:hover { background-color: var(--cor-amarelo-hover); }
+
+        .stops-result-container { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: auto; }
+        .stop-loss { background: linear-gradient(135deg, #ff7675, #d63031); }
+        .take-profit { background: linear-gradient(135deg, #2ecc71, #27ae60); }
+        .stop-loss, .take-profit { color: white; padding: 10px; border-radius: 8px; text-align: center; font-weight: bold; font-size: 0.9em; }
+
+
+        /* --- RESPONSIVIDADE --- */
+        @media (max-width: 800px) { .grid { grid-template-columns: 1fr; } }
+        @media (max-width: 480px) {
+            body { padding: 15px; } .grid { padding: 20px; }
+            .header h1 { font-size: 1.8em; } .api-fetcher { flex-direction: column; }
+            .api-fetcher input, .api-fetcher button { width: 100%; }
+            .stops-result-container { grid-template-columns: 1fr; }
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="header">
+            <h1>📊 Calculadora Crypto Pro</h1>
+        </div>
+
+        <div class="api-fetcher">
+            <input type="text" id="apiSymbol" placeholder="Ex: BTCUSDT">
+            <button id="fetchPriceBtn">
+                <i class="fa-solid fa-magnifying-glass-dollar"></i> Buscar Preço Atual
+            </button>
+            <div id="apiStatus"></div>
+        </div>
+
+        <div class="grid">
+            <div class="card pnl">
+                <form id="pnlForm">
+                    <div class="card-header">
+                        <h3><i class="fa-solid fa-sack-dollar"></i> PNL & ROE</h3>
+                        <span class="tooltip"><i class="fa-solid fa-circle-question"></i><span class="tooltip-text"><b>PNL:</b> Lucro ou Prejuízo bruto da operação.<br><b>ROE:</b> Retorno Sobre o Capital (margem), mostrando a eficiência do seu capital alocado.</span></span>
+                    </div>
+                    <div class="form-content">
+                        <div class="dual-input"><div class="input-group"><label>Preço de Entrada ($)</label><input type="number" step="any" class="entry-price-input" id="pnlEntryPrice" placeholder="50000"></div><div class="input-group"><label>Preço de Saída ($)</label><input type="number" step="any" id="pnlExitPrice" placeholder="51000"></div></div>
+                        <div class="dual-input"><div class="input-group"><label>Margem (USDT)</label><input type="number" step="any" id="pnlMargin" placeholder="100"></div><div class="input-group"><label>Alavancagem (x)</label><input type="number" step="any" id="pnlLeverage" value="10" placeholder="10"></div></div>
+                        <div class="input-group"><label>Tipo de Operação</label><select id="pnlOperationType"><option value="long">Long (Compra)</option><option value="short">Short (Venda)</option></select></div>
+                    </div>
+                    <div class="result" id="pnlResult">Preencha os campos</div>
+                    <button type="reset" class="clear-btn"><i class="fa-solid fa-eraser"></i> Limpar</button>
+                </form>
+            </div>
+
+            <div class="card liquidation">
+                 <form id="liqForm">
+                    <div class="card-header"><h3><i class="fa-solid fa-skull-crossbones"></i> Preço de Liquidação</h3><span class="tooltip"><i class="fa-solid fa-circle-question"></i><span class="tooltip-text">O preço em que a corretora fechará sua posição para evitar saldo negativo. <b>Isolada:</b> usa apenas a margem da posição. <b>Cruzada:</b> usa todo o saldo da sua carteira de futuros.</span></span></div>
+                    <div class="form-content">
+                        <div class="input-group"><label>Preço de Entrada ($)</label><input type="number" step="any" class="entry-price-input" id="liqEntryPrice" placeholder="50000"></div>
+                        <div class="dual-input"><div class="input-group"><label>Alavancagem (x)</label><input type="number" step="any" id="liqLeverage" value="10" placeholder="10"></div><div class="input-group"><label>Margem (USDT)</label><input type="number" step="any" id="liqMargin" placeholder="100"></div></div>
+                        <div class="input-group"><label>Saldo da Carteira ($)</label><input type="number" step="any" id="liqWalletBalance" placeholder="1000 (para Margem Cruzada)"></div>
+                        <div class="dual-input"><div class="input-group"><label>Tipo de Operação</label><select id="liqOperationType"><option value="long">Long (Compra)</option><option value="short">Short (Venda)</option></select></div><div class="input-group"><label>Tipo de Margem</label><select id="liqMarginType"><option value="isolated">Isolada</option><option value="cross">Cruzada</option></select></div></div>
+                    </div>
+                    <div class="result" id="liqResult">Preencha os campos</div>
+                    <button type="reset" class="clear-btn"><i class="fa-solid fa-eraser"></i> Limpar</button>
+                </form>
+            </div>
+            
+            <div class="card risk-reward">
+                <form id="rrForm">
+                    <div class="card-header"><h3><i class="fa-solid fa-chart-pie"></i> Risco x Retorno</h3><span class="tooltip"><i class="fa-solid fa-circle-question"></i><span class="tooltip-text">Compara o seu lucro potencial (Take Profit) com sua perda potencial (Stop Loss). Uma relação de 1:3 significa que você pode ganhar 3x o valor que está arriscando.</span></span></div>
+                    <div class="form-content">
+                        <div class="input-group"><label>Preço de Entrada ($)</label><input type="number" step="any" class="entry-price-input" id="rrEntryPrice" placeholder="50000"></div>
+                        <div class="dual-input"><div class="input-group"><label>Preço de Take Profit ($)</label><input type="number" step="any" id="rrTakeProfitPrice" placeholder="53000"></div><div class="input-group"><label>Preço de Stop Loss ($)</label><input type="number" step="any" id="rrStopLossPrice" placeholder="49000"></div></div>
+                        <div class="input-group"><label>Tipo de Operação</label><select id="rrOperationType"><option value="long">Long (Compra)</option><option value="short">Short (Venda)</option></select></div>
+                    </div>
+                    <div class="result" id="rrResult">Preencha os campos</div>
+                    <button type="reset" class="clear-btn"><i class="fa-solid fa-eraser"></i> Limpar</button>
+                </form>
+            </div>
+            
+             <div class="card risk-mgmt">
+                <form id="riskMgmtForm">
+                     <div class="card-header"><h3><i class="fa-solid fa-shield-halved"></i> Gerenciamento de Risco</h3><span class="tooltip"><i class="fa-solid fa-circle-question"></i><span class="tooltip-text">Com base no seu risco máximo por operação, calcula o valor exato que você pode arriscar e o tamanho da posição (quantidade) que você deve abrir.</span></span></div>
+                    <div class="form-content">
+                        <div class="dual-input"><div class="input-group"><label>Banca Total ($)</label><input type="number" step="any" id="rmBalance" placeholder="1000"></div><div class="input-group"><label>Risco por Operação (%)</label><input type="number" step="any" id="rmRiskPercent" value="2" placeholder="2"></div></div>
+                        <div class="dual-input"><div class="input-group"><label>Preço de Entrada ($)</label><input type="number" step="any" class="entry-price-input" id="rmEntryPrice" placeholder="50000"></div><div class="input-group"><label>Preço de Stop Loss ($)</label><input type="number" step="any" id="rmStopLossPrice" placeholder="49500"></div></div>
+                    </div>
+                    <div class="result" id="rmResult">Preencha os campos</div>
+                    <button type="reset" class="clear-btn"><i class="fa-solid fa-eraser"></i> Limpar</button>
+                </form>
+            </div>
+            
+             <div class="card stops-percent">
+                <form id="spForm">
+                    <div class="card-header"><h3><i class="fa-solid fa-bullseye"></i> Stop/Profit por %</h3><span class="tooltip"><i class="fa-solid fa-circle-question"></i><span class="tooltip-text">Calcule rapidamente os preços de Stop Loss e Take Profit com base em uma porcentagem a partir do seu preço de entrada, e veja o ROE potencial.</span></span></div>
+                    <div class="form-content">
+                        <div class="input-group"><label>Preço de Entrada ($)</label><input type="number" step="any" class="entry-price-input" id="spEntryPrice" placeholder="50000"></div>
+                        <div class="dual-input"><div class="input-group"><label>Stop Loss (%)</label><input type="number" step="any" id="spStopLossPercent" placeholder="2"></div><div class="input-group"><label>Take Profit (%)</label><input type="number" step="any" id="spTakeProfitPercent" placeholder="5"></div></div>
+                        <div class="dual-input"><div class="input-group"><label>Alavancagem (x)</label><input type="number" step="any" id="spLeverage" value="10" placeholder="10"></div><div class="input-group"><label>Tipo de Operação</label><select id="spOperationType"><option value="long">Long (Compra)</option><option value="short">Short (Venda)</option></select></div></div>
+                    </div>
+                    <div class="stops-result-container">
+                        <div class="result stop-loss" id="spStopLossResult">Stop Loss</div>
+                        <div class="result take-profit" id="spTakeProfitResult">Take Profit</div>
+                    </div>
+                    <button type="reset" class="clear-btn"><i class="fa-solid fa-eraser"></i> Limpar</button>
+                </form>
+            </div>
+            
+            <div class="card avg-price">
+                 <form id="avgPriceForm">
+                     <div class="card-header"><h3><i class="fa-solid fa-calculator"></i> Preço Médio</h3><span class="tooltip"><i class="fa-solid fa-circle-question"></i><span class="tooltip-text">Calcule o preço médio da sua posição total ao fazer múltiplas compras do mesmo ativo a preços diferentes.</span></span></div>
+                    <div class="form-content">
+                        <div id="avgPriceEntries">
+                            <div class="avg-price-entry"><input type="number" step="any" placeholder="Preço 1" class="avg-price-p"><input type="number" step="any" placeholder="Qtd 1" class="avg-price-q"></div>
+                            <div class="avg-price-entry"><input type="number" step="any" placeholder="Preço 2" class="avg-price-p"><input type="number" step="any" placeholder="Qtd 2" class="avg-price-q"></div>
+                        </div>
+                         <button type="button" id="addEntryBtn"><i class="fa-solid fa-plus"></i> Adicionar Entrada</button>
+                    </div>
+                     <div class="result" id="avgPriceResult">Preencha os campos</div>
+                     <button type="reset" class="clear-btn"><i class="fa-solid fa-eraser"></i> Limpar</button>
+                </form>
+            </div>
+
+            <div class="card goal">
+                <form id="goalForm">
+                    <div class="card-header"><h3><i class="fa-solid fa-flag-checkered"></i> Meta Atingida</h3><span class="tooltip"><i class="fa-solid fa-circle-question"></i><span class="tooltip-text">Acompanhe o progresso em direção a qualquer meta numérica, como um objetivo de lucro ou de crescimento da banca.</span></span></div>
+                    <div class="form-content">
+                        <div class="input-group"><label>Valor da Meta ($)</label><input type="number" step="any" id="goalTargetValue" placeholder="10000"></div>
+                        <div class="input-group"><label>Valor Atingido ($)</label><input type="number" step="any" id="goalAchievedValue" placeholder="7500"></div>
+                    </div>
+                    <div class="result" id="goalResult">Preencha os campos</div>
+                    <button type="reset" class="clear-btn"><i class="fa-solid fa-eraser"></i> Limpar</button>
+                </form>
+            </div>
+
+            <div class="card performance">
+                <form id="perfForm">
+                    <div class="card-header"><h3><i class="fa-solid fa-rocket"></i> Performance Acumulada</h3><span class="tooltip"><i class="fa-solid fa-circle-question"></i><span class="tooltip-text">Analise o desempenho geral de sua carteira ao longo de um período, com projeções diárias e mensais.</span></span></div>
+                    <div class="form-content">
+                        <div class="dual-input"><div class="input-group"><label>Banca Inicial ($)</label><input type="number" step="any" id="perfStartingBalance" placeholder="1000"></div><div class="input-group"><label>Banca Final ($)</label><input type="number" step="any" id="perfEndingBalance" placeholder="1250"></div></div>
+                        <div class="input-group"><label>Período (dias)</label><input type="number" id="perfTradingDays" placeholder="30"></div>
+                    </div>
+                    <div class="result" id="performanceResult">Preencha os campos</div>
+                    <button type="reset" class="clear-btn"><i class="fa-solid fa-eraser"></i> Limpar</button>
+                </form>
+            </div>
+            
+            <div class="card percentage">
+                <form id="percForm">
+                    <div class="card-header"><h3><i class="fa-solid fa-percentage"></i> Cálculos de Porcentagem</h3><span class="tooltip"><i class="fa-solid fa-circle-question"></i><span class="tooltip-text">Utilitários rápidos para cálculos de porcentagem comuns no dia a dia do trading.</span></span></div>
+                    <div class="form-content">
+                        <div class="input-group"><label>Quanto X é de Y?</label><div class="dual-input"><input type="number" step="any" id="percNum1" placeholder="X (ex: 7)"><input type="number" step="any" id="percNum2" placeholder="Y (ex: 10)"></div></div>
+                        <div class="result" id="percentageResult1">...</div>
+                        <div class="separator"></div>
+                        <div class="input-group"><label>Quanto é X% de Y?</label><div class="dual-input"><input type="number" step="any" id="percPercentValue" placeholder="X% (ex: 15)"><input type="number" step="any" id="percBaseNumber" placeholder="Y (ex: 200)"></div></div>
+                        <div class="result" id="percentageResult2">...</div>
+                    </div>
+                    <button type="reset" class="clear-btn"><i class="fa-solid fa-eraser"></i> Limpar</button>
+                </form>
+            </div>
+            
+        </div>
+    </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+
+        const apiKey = 'SUA_CHAVE_AQUI'; 
+        const apiBaseUrl = 'https://api.binance.com/api/v3/ticker/price';
+
+        const getVal = (id) => parseFloat(document.getElementById(id).value) || 0;
+        const getEl = (id) => document.getElementById(id);
+        const getSel = (id) => getEl(id).value;
+        const formatCurrency = (value) => value.toLocaleString('pt-BR', { style: 'currency', currency: 'USD' });
+        const formatNumber = (value, decimals = 8) => parseFloat(value).toFixed(decimals);
+
+        getEl('fetchPriceBtn').addEventListener('click', async () => {
+            const symbol = getEl('apiSymbol').value.toUpperCase();
+            const statusEl = getEl('apiStatus');
+            const entryPriceInputs = document.querySelectorAll('.entry-price-input');
+            if (!symbol) { statusEl.textContent = 'Por favor, insira um símbolo.'; statusEl.className = 'result error'; return; }
+            statusEl.textContent = `Buscando ${symbol}...`; statusEl.className = 'result';
+            try {
+                const response = await fetch(`${apiBaseUrl}?symbol=${symbol}`);
+                if (!response.ok) throw new Error('Símbolo não encontrado ou erro na API.');
+                const data = await response.json();
+                const price = parseFloat(data.price);
+                entryPriceInputs.forEach(input => {
+                    input.value = price.toFixed(4);
+                    input.dispatchEvent(new Event('input'));
+                });
+                statusEl.textContent = `${symbol}: ${formatCurrency(price)}`;
+                statusEl.className = 'result success';
+            } catch (error) { statusEl.textContent = error.message; statusEl.className = 'result error'; }
+        });
+        
+        function calculatePNL() {
+            const entryPrice = getVal('pnlEntryPrice'), exitPrice = getVal('pnlExitPrice'), margin = getVal('pnlMargin'), leverage = getVal('pnlLeverage'), type = getSel('pnlOperationType'), resultEl = getEl('pnlResult');
+            if (!entryPrice || !exitPrice || !margin || !leverage) { resultEl.innerHTML = 'Preencha os campos'; resultEl.className = 'result'; return; }
+            const positionSize = margin * leverage;
+            const quantity = entryPrice > 0 ? positionSize / entryPrice : 0;
+            let pnl = (type === 'long') ? (exitPrice - entryPrice) * quantity : (entryPrice - exitPrice) * quantity;
+            const roe = margin > 0 ? (pnl / margin) * 100 : 0;
+            const pnlClass = pnl >= 0 ? 'profit' : 'loss';
+            resultEl.className = `result result-pnl ${pnlClass}`;
+            resultEl.innerHTML = `PNL: ${formatCurrency(pnl)} <br> ROE: ${roe.toFixed(2)}%`;
+        }
+        
+        function calculateLiquidation() {
+            const entryPrice = getVal('liqEntryPrice'), leverage = getVal('liqLeverage'), margin = getVal('liqMargin'), walletBalance = getVal('liqWalletBalance'), opType = getSel('liqOperationType'), marginType = getSel('liqMarginType'), resultEl = getEl('liqResult');
+            if (!entryPrice || !leverage || !margin) { resultEl.innerHTML = 'Preencha os campos'; resultEl.className = 'result'; return; }
+            
+            const positionSize = margin * leverage;
+            const quantity = entryPrice > 0 ? positionSize / entryPrice : 0;
+            if (quantity === 0) { resultEl.innerHTML = 'Preencha os campos'; resultEl.className = 'result'; return; }
+
+            const maintenanceMarginRate = 0.005, positionValue = entryPrice * quantity; let liquidationPrice = 0;
+            if (marginType === 'isolated') { const initialMargin = positionValue / leverage; if (opType === 'long') { liquidationPrice = entryPrice * (1 - (1/leverage)) + (entryPrice * maintenanceMarginRate); } else { liquidationPrice = entryPrice * (1 + (1/leverage)) - (entryPrice * maintenanceMarginRate); } } 
+            else { if (!walletBalance) { resultEl.innerHTML = 'Insira o Saldo da Carteira'; resultEl.className = 'result error'; return; } const maintenanceMargin = positionValue * maintenanceMarginRate; if (opType === 'long') { liquidationPrice = (positionValue - walletBalance + maintenanceMargin) / quantity; } else { liquidationPrice = (positionValue + walletBalance - maintenanceMargin) / quantity; } }
+            if (liquidationPrice <= 0) { resultEl.innerHTML = `Improvável ser liquidado`; resultEl.className = 'result success'; } else { resultEl.innerHTML = `Preço de Liquidação: <br> ${formatCurrency(liquidationPrice)}`; resultEl.className = 'result'; }
+        }
+        
+        function calculateRiskReward() {
+            const entryPrice = getVal('rrEntryPrice'), tpPrice = getVal('rrTakeProfitPrice'), slPrice = getVal('rrStopLossPrice'), type = getSel('rrOperationType'), resultEl = getEl('rrResult');
+            if (!entryPrice || !tpPrice || !slPrice) { resultEl.innerHTML = 'Preencha os campos'; resultEl.className = 'result'; return; }
+            let potentialProfit, potentialLoss;
+            if (type === 'long') { potentialProfit = tpPrice - entryPrice; potentialLoss = entryPrice - slPrice; } else { potentialProfit = entryPrice - tpPrice; potentialLoss = slPrice - entryPrice; }
+            if (potentialLoss <= 0 || potentialProfit <= 0) { resultEl.innerHTML = `Valores de TP/SL inválidos`; resultEl.className = 'result error'; return; }
+            const ratio = potentialProfit / potentialLoss;
+            resultEl.innerHTML = `Relação Risco/Retorno: <br> 1 : ${ratio.toFixed(2)}`; resultEl.className = 'result';
+        }
+
+        function calculateRiskManagement() {
+            const balance = getVal('rmBalance'), riskPercent = getVal('rmRiskPercent'), entryPrice = getVal('rmEntryPrice'), slPrice = getVal('rmStopLossPrice'), resultEl = getEl('rmResult');
+            if (!balance || !riskPercent || !entryPrice || !slPrice) { resultEl.innerHTML = 'Preencha os campos'; resultEl.className = 'result'; return; }
+            const riskAmount = balance * (riskPercent / 100), priceDiff = Math.abs(entryPrice - slPrice);
+            if (priceDiff === 0) { resultEl.innerHTML = 'Entrada e Stop não podem ser iguais'; resultEl.className = 'result error'; return; }
+            const positionSize = riskAmount / priceDiff;
+            resultEl.innerHTML = `Risco: ${formatCurrency(riskAmount)} <br> Posição: ${formatNumber(positionSize, 6)} moedas`; resultEl.className = 'result';
+        }
+
+        function calculateStopsPercent() {
+            const entryPrice = getVal('spEntryPrice'), stopLossPercent = getVal('spStopLossPercent'), takeProfitPercent = getVal('spTakeProfitPercent'), leverage = getVal('spLeverage'), type = getSel('spOperationType'), slResultEl = getEl('spStopLossResult'), tpResultEl = getEl('spTakeProfitResult');
+            if (!entryPrice || (!stopLossPercent && !takeProfitPercent)) { slResultEl.innerHTML = 'Stop Loss'; tpResultEl.innerHTML = 'Take Profit'; return; }
+            let slPrice = 0, tpPrice = 0;
+            if (type === 'long') { slPrice = entryPrice * (1 - stopLossPercent / 100); tpPrice = entryPrice * (1 + takeProfitPercent / 100); } else { slPrice = entryPrice * (1 + stopLossPercent / 100); tpPrice = entryPrice * (1 - takeProfitPercent / 100); }
+            let slText = 'Stop Loss';
+            if (stopLossPercent > 0) { const slRoe = -stopLossPercent * leverage; slText = `SL: ${formatCurrency(slPrice)}<br><small>(${slRoe.toFixed(2)}% ROE)</small>`; }
+            let tpText = 'Take Profit';
+            if (takeProfitPercent > 0) { const tpRoe = takeProfitPercent * leverage; tpText = `TP: ${formatCurrency(tpPrice)}<br><small>(+${tpRoe.toFixed(2)}% ROE)</small>`; }
+            slResultEl.innerHTML = slText; tpResultEl.innerHTML = tpText;
+        }
+        
+        function calculateAveragePrice() {
+            const entries = document.querySelectorAll('.avg-price-entry'), resultEl = getEl('avgPriceResult');
+            let totalCost = 0, totalQuantity = 0;
+            entries.forEach(entry => {
+                const price = parseFloat(entry.querySelector('.avg-price-p').value) || 0;
+                const quantity = parseFloat(entry.querySelector('.avg-price-q').value) || 0;
+                if (price > 0 && quantity > 0) { totalCost += price * quantity; totalQuantity += quantity; }
+            });
+            if (totalQuantity === 0) { resultEl.innerHTML = 'Preencha os campos'; resultEl.className = 'result'; return; }
+            const avgPrice = totalCost / totalQuantity;
+            resultEl.innerHTML = `Preço Médio: ${formatCurrency(avgPrice)} <br> Qtd Total: ${formatNumber(totalQuantity, 6)}`; resultEl.className = 'result';
+        }
+
+        function calculateGoal() {
+            const target = getVal('goalTargetValue'), achieved = getVal('goalAchievedValue'), resultEl = getEl('goalResult');
+            if (!target) { resultEl.innerHTML = 'Preencha os campos'; resultEl.className = 'result'; return; }
+            const percentage = (achieved / target) * 100, remaining = target - achieved;
+            resultEl.innerHTML = `Atingido: ${percentage.toFixed(2)}% <br> Restante: ${formatCurrency(remaining)}`; resultEl.className = 'result';
+        }
+        
+        function calculatePerformance() {
+            const starting = getVal('perfStartingBalance'), ending = getVal('perfEndingBalance'), days = getVal('perfTradingDays'), resultEl = getEl('performanceResult');
+            if (!starting || !ending) { resultEl.innerHTML = 'Preencha os campos'; resultEl.className = 'result'; return; }
+            const totalReturn = ((ending - starting) / starting) * 100, profit = ending - starting, signal = totalReturn >= 0 ? '+' : '';
+            let result = `Performance: ${signal}${totalReturn.toFixed(2)}% (${formatCurrency(profit)})`;
+            if (days > 0) { const dailyReturn = totalReturn / days, monthlyReturn = dailyReturn * 30; result += `<br><small>Diário: ${signal}${dailyReturn.toFixed(2)}% | Mensal: ${signal}${monthlyReturn.toFixed(2)}%</small>`; }
+            resultEl.innerHTML = result;
+            resultEl.className = totalReturn >= 0 ? 'result success' : 'result error';
+        }
+        
+        function calculatePercentageIsOf() {
+            const num1 = getVal('percNum1'), num2 = getVal('percNum2'), resultEl = getEl('percentageResult1');
+            if (!num1 || !num2) { resultEl.innerHTML = '...'; return; }
+            const percentage = (num1 / num2) * 100;
+            resultEl.innerHTML = `${num1} é ${percentage.toFixed(2)}% de ${num2}`;
+        }
+
+        function calculatePercentOf() {
+            const percent = getVal('percPercentValue'), base = getVal('percBaseNumber'), resultEl = getEl('percentageResult2');
+            if (!percent || !base) { resultEl.innerHTML = '...'; return; }
+            const result = (percent / 100) * base;
+            resultEl.innerHTML = `${percent}% de ${base} = ${result.toFixed(2)}`;
+        }
+
+
+        // --- EVENT LISTENERS ---
+        const addListener = (ids, func) => ids.forEach(id => getEl(id).addEventListener('input', func));
+        addListener(['pnlEntryPrice', 'pnlExitPrice', 'pnlMargin', 'pnlLeverage', 'pnlOperationType'], calculatePNL);
+        addListener(['liqEntryPrice', 'liqLeverage', 'liqMargin', 'liqWalletBalance', 'liqOperationType', 'liqMarginType'], calculateLiquidation);
+        addListener(['rrEntryPrice', 'rrTakeProfitPrice', 'rrStopLossPrice', 'rrOperationType'], calculateRiskReward);
+        addListener(['rmBalance', 'rmRiskPercent', 'rmEntryPrice', 'rmStopLossPrice'], calculateRiskManagement);
+        addListener(['spEntryPrice', 'spStopLossPercent', 'spTakeProfitPercent', 'spLeverage', 'spOperationType'], calculateStopsPercent);
+        addListener(['goalTargetValue', 'goalAchievedValue'], calculateGoal);
+        addListener(['perfStartingBalance', 'perfEndingBalance', 'perfTradingDays'], calculatePerformance);
+        addListener(['percNum1', 'percNum2'], calculatePercentageIsOf);
+        addListener(['percPercentValue', 'percBaseNumber'], calculatePercentOf);
+
+        getEl('avgPriceEntries').addEventListener('input', (e) => { if (e.target.matches('.avg-price-p, .avg-price-q')) calculateAveragePrice(); });
+        getEl('addEntryBtn').addEventListener('click', () => {
+             const newEntry = document.createElement('div'); newEntry.className = 'avg-price-entry';
+             const entryCount = getEl('avgPriceEntries').children.length + 1;
+             newEntry.innerHTML = `<input type="number" step="any" placeholder="Preço ${entryCount}" class="avg-price-p"><input type="number" step="any" placeholder="Qtd ${entryCount}" class="avg-price-q">`;
+             getEl('avgPriceEntries').appendChild(newEntry);
+        });
+
+        document.querySelectorAll('form').forEach(form => {
+            form.addEventListener('reset', () => {
+                setTimeout(() => {
+                    const results = form.querySelectorAll('.result');
+                    results.forEach(result => {
+                        if (result.matches('.stop-loss')) result.innerHTML = 'Stop Loss';
+                        else if (result.matches('.take-profit')) result.innerHTML = 'Take Profit';
+                        else if (result.id.includes('percentageResult')) result.innerHTML = '...';
+                        else result.innerHTML = 'Preencha os campos';
+                        result.className = result.className.replace(/ (success|error|profit|loss)/g, '');
+                    });
+                    if(form.id === 'avgPriceForm') calculateAveragePrice();
+                }, 10);
+            });
+        });
+    });
+    </script>
+</body>
+</html>
